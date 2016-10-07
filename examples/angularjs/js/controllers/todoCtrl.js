@@ -10,9 +10,16 @@ angular.module('todomvc')
 		'use strict';
 
 		var todos = $scope.todos = store.todos;
+		var today = new Date();
 
 		$scope.newTodo = '';
 		$scope.editedTodo = null;
+		$scope.today = $filter('date')(today, "MM/dd/yyyy");
+		$scope.priorities = [
+			{ text: 'Low', value: '3'},
+			{ text: 'Medium', value: '2'},
+			{ text: 'High', value: '1'}
+		];
 
 		$scope.$watch('todos', function () {
 			$scope.remainingCount = $filter('filter')(todos, { completed: false }).length;
@@ -24,8 +31,9 @@ angular.module('todomvc')
 		$scope.$on('$routeChangeSuccess', function () {
 			var status = $scope.status = $routeParams.status || '';
 			$scope.statusFilter = (status === 'active') ?
-				{ completed: false } : (status === 'completed') ?
-				{ completed: true } : {};
+			{ completed: false } : (status === 'completed') ?
+			{ completed: true } : (status === 'highpriority') ?
+			{ completed: false, priority: 1 } :{};
 		});
 
 		$scope.addTodo = function () {
@@ -109,6 +117,10 @@ angular.module('todomvc')
 				.then(function success() {}, function error() {
 					todo.completed = !todo.completed;
 				});
+
+			if (todo.completed) {
+				$scope.setCompletionDate(todo);
+			}
 		};
 
 		$scope.clearCompletedTodos = function () {
@@ -122,4 +134,25 @@ angular.module('todomvc')
 				}
 			});
 		};
+
+		$scope.setPriority = function (todo, priority) {
+			if (angular.isDefined(priority)) {
+				todo.priority = priority;
+			}
+			store.put(todo, todos.indexOf(todo))
+				.then(function success() {}, function error() {
+					todo.priority = 0;
+				});
+		};
+
+		$scope.setCompletionDate = function (todo) {
+			if (!angular.isDefined(todo.dateCompleted)) {
+				todo.dateCompleted = $scope.today;
+			}
+			store.put(todo, todos.indexOf(todo))
+				.then(function success() {}, function error() {
+					todo.dateCompleted = $scope.today;
+				});
+		};
+
 	});
