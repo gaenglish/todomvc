@@ -25,8 +25,14 @@
 						<li ng-repeat="todo in todos | filter:statusFilter track by $index" ng-class="{completed: todo.completed, editing: todo == editedTodo}">
 							<div class="view">
 								<input class="toggle" type="checkbox" ng-model="todo.completed" ng-change="toggleCompleted(todo)">
-								<label ng-dblclick="editTodo(todo)">{{todo.title}}</label>
+								<label ng-dblclick="editTodo(todo)" ng-class="{ 'lowPriority': todo.priority==3, 'mediumPriority': todo.priority==2, 'highPriority': todo.priority==1}">{{todo.title}}</label>
 								<button class="destroy" ng-click="removeTodo(todo)"></button>
+                                <span ng-hide="todo.completed" class="priority">
+									Priority:
+									<select  ng-model="todo.priority" ng-options="p.value as p.text for p in priorities" ng-change="setPriority(todo)" ng-class="{ 'lowPriority': todo.priority==3, 'mediumPriority': todo.priority==2, 'highPriority': todo.priority==1}">
+									</select>
+								</span>
+                                <span ng-show="todo.completed" class="completed">Completed On: <input type="text" ng-model="todo.dateCompleted" uib-datepicker-popup name="dateCompleted" ng-blur="setCompletionDate(todo)" mask="19/39/9999" mask-restrict="reject" mask-clean="true"></span>
 							</div>
 							<form ng-submit="saveEdits(todo, 'submit')">
 								<input class="edit" ng-trim="false" ng-model="todo.title" todo-escape="revertEdits(todo)" ng-blur="saveEdits(todo, 'blur')" todo-focus="todo == editedTodo">
@@ -45,6 +51,9 @@
 						<li>
 							<a ng-class="{selected: status == 'active'}" href="#/active">Active</a>
 						</li>
+                        <li>
+                            <a ng-class="{selected: status == 'highpriority'}" href="#/highpriority">High Priority</a>
+                        </li>
 						<li>
 							<a ng-class="{selected: status == 'completed'}" href="#/completed">Completed</a>
 						</li>
@@ -72,5 +81,6 @@
 		<script src="js/services/todoStorage.js"></script>
 		<script src="js/directives/todoFocus.js"></script>
 		<script src="js/directives/todoEscape.js"></script>
+        <script src="js/libs/ngMask.min.js"></script>
 	</body>
 </html>
